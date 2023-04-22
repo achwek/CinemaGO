@@ -5,14 +5,17 @@ const {
   addFilm,
   updateFilm,
   deleteFilm,
-} = require("../controllers/filmController")
-const Task = require("../Models/filmModel")
+  getFilmById,
+} = require("../Controllers/filmController")
 
-// get my tasks
+// get my Film
 router.get("/", getFilms)
+router.get("/:id", getFilmById);
+// add Film
 router.post("/", addFilm)
-
+//update Film
 router.put("/:id", updateFilm)
+//delete Film
 router.delete("/:id", deleteFilm)
 
 module.exports = router

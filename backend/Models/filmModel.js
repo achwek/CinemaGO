@@ -14,42 +14,62 @@ const filmSchema = mongoose.Schema(
     }, 
     country: {
       type: String,
-     // required: [true, "Please add a end Country"],
+      required: [true, "Please add a end Country"],
     },
     cinema: {
       type: String,
-     // required: [true, "Please add a end cinema"],
+      required: [true, "Please add a end cinema"],
     },
     categorie: {
       type: String,
-      //required: [true, "Please add a end cinema"],
+      required: [true, "Please add a end cinema"],
+    },
+    partner: {
+      type: String,
+      required: [true, "Please add partner"],
     },
     age: {
       type: Number,
-     // required: [true, "Please add a end type"],
+      default: 0,
+      required: [true, "Please add a end type"],
     },
     type: {
       type: String,
-      //required: [true, "Please add a end type"],
+      required: [true, "Please add a end type"],
     },
-    timestart: {
+    date: {
       type: Date,
-      //required: [true, "Please add an start time"],
+          
+      required: [true, "Please add an start time"],
+    }, 
+    timestart: {
+      type: String,
+      required: [true, "Please add an start time"],
     },
     timeend: {
-      type: Date,
-      //required: [true, "Please add a end time"],
+      type: String,
+      required: [true, "Please add a end time"],
     }, 
     image: {
       type: String,
-      //required: [true, "Please add a image"],
+      required: [true, "Please add a image"],
     }, 
     video: {
       type: String,
-      //required: [true, "Please add a video"],
+      //equired: [true, "Please add a video"],
     },
+    imagesStars:{
+      type: [String],
+      //equired: [true, "Please add a video"],
+    },
+    listDate: {
+      date: { type: Date },
+      timestart: { type: String },
+      timeend: { type: String },
+    }
     
   },
+
   {
     timestamps: true,
   },

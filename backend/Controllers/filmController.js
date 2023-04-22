@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler")
 const Film = require("../Models/filmModel")
 
+
 const getFilms =async (req, res) => {
  try {
   const films = await Film.find()
@@ -10,31 +11,64 @@ const getFilms =async (req, res) => {
  }
 }
 
+const getFilmById = async (req, res) => {
+  try {
+    const film = await Film.findById(req.params.id);
+    if (!film) {
+      return res.status(404).json({ message: "Film not found" });
+    }
+    return res.status(200).json(film);
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
+
 const addFilm = asyncHandler(async (req, res) => {
-  const { title, description,country,cinema,categorie,type, timestart, timeend, date,image,video } = req.body
-  //Check if champ vide
-  // || !categorie|| !type || !timestart || !timeend || !age|| !image || !video|| !country || !cinema
-  if (!title || !description ) {
-    res.status(400)
-    throw new Error("Please add all fields")
+  const { title, description, country, cinema, categorie,partner, type, age, timestart, timeend, date, image, video,imagesStars,listDate } = req.body;
+
+  // Check if any required fields are missing
+  if (!title || !description || !country ||!partner || !cinema || !categorie || !type || !age || !timestart || !timeend || !date || !image) {
+    res.status(400);
+    throw new Error("Please provide all required fields");
   }
 
-  // Create Tache
+  // Convert the age field to a number
+  const ageN = parseInt(age);
+
+  // Convert the date field to a Date object
+ /*const dateParts = date.split("/");
+const dateObject = new Date(`${dateParts[1]}-${dateParts[0]}-${dateParts[2]}`);
+const formattedDate = `${dateObject.getDate()}-${dateObject.getMonth() + 1}-${dateObject.getFullYear()}`;*/
+
+ 
+
+  // Create the film object
   const film = await Film.create({
-   // filmId: req.film._id,
     title,
     description,
-    country ,
+    country,
     cinema,
     categorie,
+    partner,
     type,
+    age: ageN,
     timestart,
     timeend,
-    image ,
+    date,
+    image,
     video,
-  })
-  res.send("Tache  Added Successfully")
-})
+    imagesStars,
+    listDate,
+
+  });
+
+  res.status(201).json({
+    success: true,
+    data: film
+  });
+});
+
 
 const updateFilm = asyncHandler(async (req, res) => {
 const film = await Film.findById(req.params.id)
@@ -62,4 +96,5 @@ module.exports = {
   addFilm,
   updateFilm,
   deleteFilm,
+  getFilmById,
 }

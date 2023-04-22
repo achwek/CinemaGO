@@ -61,18 +61,70 @@ $(document).ready(function () {
 	/*==============================
 	Select2
 	==============================*/
-	$('#cinema').select2({
-		placeholder: "Choose Cinema",
-		allowClear: true
-	});
-
-	$('#country').select2({
-		placeholder: "Choose country / countries"
-	});
 
 	$('#genre').select2({
-		placeholder: "Choose genre / genres"
+		placeholder: "Choose genre",
+		selectOnClose: true
+	}).on('change', function() {
+		var selectedValue = $(this).val();
+		localStorage.setItem("optiongenre",selectedValue)
+		console.log("select genre: "+selectedValue);
+
 	});
+
+	$('#partner').select2({
+		placeholder: "Choose partner",
+		selectOnClose: true
+	}).on('change', function() {
+		var selectedValue = $(this).val();
+		localStorage.setItem("optionpartner",selectedValue)
+		console.log("select partner: "+selectedValue);
+
+	});
+	
+
+	$('#cinema').select2({
+		placeholder: "Choose Cinema",
+		selectOnClose: true
+	}).on('change', function() {
+		var selectedValue = $(this).val();
+		
+	localStorage.setItem("optionCinema",selectedValue)
+		console.log("select cinema: "+selectedValue);
+	});
+//country selected
+$('#country').select2({
+	placeholder: "Choose country"
+  }).on('change', async function() {
+	const selectedValue = $(this).val();
+	console.log("SelectedCountry:", selectedValue);
+	localStorage.setItem("optionCountry", selectedValue);
+	
+	const cinemasString = localStorage.getItem(selectedValue);
+	const cinemas = JSON.parse(cinemasString); // convert string to array
+	
+	if (cinemas) {
+	  const $cinema = $('#cinema');
+	  $cinema.empty();
+	  $cinema.append($('<option>').val("").text(""));
+	  cinemas.forEach(cinema => {
+		$cinema.append($('<option>').val(cinema).text(cinema));
+	  });
+	} else {
+	  console.error("Cinema list is empty or undefined.");
+	 // alert("Failed to retrieve cinema list for selected country.");
+	}
+  });
+  
+  
+
+
+
+ 
+	//select genre
+
+
+	
 
 	$('#subscription, #rights').select2();
 
