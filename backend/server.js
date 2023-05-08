@@ -12,9 +12,12 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors());
 app.use('/api/film', require('./Routes/filmsRoute'))
-app.use('/api/country', require('./Routes/countryRoute'))
+//app.use('/api/country', require('./Routes/countryRoute'))
 app.use('/api/partner', require('./Routes/partnersRoute'))
+app.use('/api/cinema', require('./Routes/cinemaRoute'))
+app.use('/api/categorie', require('./Routes/categorieRoure'))
 //app.use('/api/upload',express.static('./Controllers/UploadFile'))
+
 //app.use('/api/imageUpload',require('./Controllers/imageUplode'))
 app.use(errorHandler)
 

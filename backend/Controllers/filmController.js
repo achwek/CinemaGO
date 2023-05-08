@@ -25,10 +25,10 @@ const getFilmById = async (req, res) => {
 
 
 const addFilm = asyncHandler(async (req, res) => {
-  const { title, description, country, cinema, categorie,partner, type, age, timestart, timeend, date, image, video,imagesStars,listDate } = req.body;
+  const { title, description,  categorie,partner, type, age, image, video,imagesStars,listProjection } = req.body;
 
   // Check if any required fields are missing
-  if (!title || !description || !country ||!partner || !cinema || !categorie || !type || !age || !timestart || !timeend || !date || !image) {
+  if (!title || !description ||!partner  || !categorie || !type || !age || !image || !listProjection) {
     res.status(400);
     throw new Error("Please provide all required fields");
   }
@@ -47,19 +47,14 @@ const formattedDate = `${dateObject.getDate()}-${dateObject.getMonth() + 1}-${da
   const film = await Film.create({
     title,
     description,
-    country,
-    cinema,
     categorie,
     partner,
     type,
     age: ageN,
-    timestart,
-    timeend,
-    date,
     image,
     video,
     imagesStars,
-    listDate,
+    listProjection,
 
   });
 

@@ -12,7 +12,8 @@ function AddFilm(){
 
 	// declaration const
 	const urlAddFilm ="http://localhost:5000/api/film"
-	const urlCountry="http://localhost:5000/api/country"
+	const urlCinema="http://localhost:5000/api/cinema"
+	const urlCategorie="http://localhost:5000/api/categorie"
 	const urlPartner="http://localhost:5000/api/partner"
 	const navigate = useNavigate()
 	const [uploadImage, setUploadImage]= useState('');
@@ -21,9 +22,10 @@ function AddFilm(){
 const [uploadProgress, setUploadProgress] = useState(0);
 const [progressMessage, setProgressMessage] = useState("");
   //Liste Date
-  const [listDate, setListDate] = useState([]);
+  const [projection, setProjection] = useState([]);
 
-  const [dateS, setDateS] = useState({
+  const [dataproj, setDateProj] = useState({
+	cinema:'',
     date: '',
     timestart: '',
     timeend: ''
@@ -35,10 +37,11 @@ const [progressMessage, setProgressMessage] = useState("");
 //images Start
 	const [images, setImages] = useState([]);
   const [urls, setUrls] = useState([]);
-  //country and cinema
-  const [countries, setCountries] = useState([]);
+  // cinema
   const [cinemas, setCinemas] = useState([]);
-//Partner
+   // categorie
+ const [categories, setCategories] = useState([]);
+ //Partner
 const [partners, setPartners] = useState([]);
 
  // Add Partner
@@ -63,31 +66,32 @@ const handleChange = (e) => {
     });
   };
 
-// Fonction pour mettre à jour les données du formulaire
-const onChangeDate = (e) => {
+const onChangeProjection = (e) => {
+	// Extract the name and value of the input that triggered the change event
 	const { name, value } = e.target;
-	setDateS(prevDateS => ({ ...prevDateS, [name]: value }));
+  
+	// Update the state of the form data with the new input value
+	// by creating a new object that merges the previous state with the updated value
+	setDateProj(prevDataProj => ({ ...prevDataProj, [name]: value }));
   };
+  
   
   const handleSubmitPartner = async (e) => {
 	e.preventDefault(); // Empêcher la soumission du formulaire
   
-	// Récupérer les valeurs des champs du formulaire
-	const firstName = e.target.firstName.value;
-	const lastName = e.target.lastName.value;
-	const email = e.target.email.value;
+
   
 	// Faire une requête HTTP avec les données du formulaire
 	try {
 	  // Construire l'objet de données à envoyer dans la requête
-	  const data = {
-		firstName: firstName,
-		lastName: lastName,
-		email: email
-	  };
+	  const {
+		firstName,
+		lastName,
+		email
+	  }= dataPartner;
   
 	  // Envoyer la requête POST à l'API avec les données du formulaire
-	  const response = await axios.post(urlPartner, data);
+	  const response = await axios.post(urlPartner, dataPartner);
   	setDataPartner({
 		firstName: "",
 		lastName: "",
@@ -114,67 +118,67 @@ const onChangeDate = (e) => {
 
   //function pour ajouter liste date
 // Fonction pour ajouter les données dans la liste ListDate
+const [showDivProj, setShowDivProj] = useState(false);
+// Add a new state variable to keep track of whether the button has been clicked before
+const [clickedBefore, setClickedBefore] = useState(false);
+
 const handleAddToList = () => {
-	console.log(dateS);
-	 
-	if (dateS.date !== '' && dateS.timestart !== '' && dateS.timeend !== '') {
-		const  newDate = {
-		date: dateS.date,
-		timestart: dateS.timestart,
-		timeend: dateS.timeend
-	  };
-	  setListDate(prevListDate => [...prevListDate, newDate]); // Update with newDate instead of dateS
+	console.log(dataproj);
 
-	  setDateS({
-		date: '',
-		timestart: '',
-		timeend: ''
-	  });
-	 console.log(listDate)
-	 formatDate.listDate = listDate;
+	
+	
+
+	dataproj.cinema= localStorage.getItem("optionCinema")
+	if (dataproj.cinema !== '' && dataproj.date !== '' && dataproj.timestart !== '' && dataproj.timeend !== '') {
+		if (!clickedBefore) {
+			setShowDivProj(true);
+			setClickedBefore(true);
+		}
+		const  newProj = {
+			cinema: dataproj.cinema,
+			date: dataproj.date,
+			timestart: dataproj.timestart,
+			timeend: dataproj.timeend
+		};
+		setProjection(prevProjections => [...prevProjections, newProj]); // Update with newDate instead of dateS
+
+		setDateProj({
+			cinema: '',
+			date: '',
+			timestart: '',
+			timeend: ''
+		});
+
+		console.log(projection)
 	}
-
 };
 
+
   
-	  
-
-
-//const countryCinema = async axios.get(urlCountry, )
 
 		const [formData, setFormData] = useState({
 		title: "",
 		description: "",
-		country: "",
-		cinema: "",
 		categorie: "",
 		partner:"",
 		age:"",
 		type: "",
-		date:"",
-		timestart: "",
-		timeend: "",
 		image: "",
 		video: "",
 		imagesStars:[],
-		listDates: [],
+		listProjection:[],
 	  });
 	  const {
 		title,
 		description,
-		country,
-		cinema,
 		categorie,
 		partner,
 		age,
 		type,
-		date,
-		timestart,
-		timeend,
 		image,
 		video,
 		imagesStars,
-		listDates ,
+		listProjection,
 	  } = formData;
 	 
 	
@@ -264,13 +268,13 @@ for (let i = 0; i < images.length; i++) {
 			console.log("liste Url Images Start" + urls);
   
 			// Create an object 
-			formData.country = localStorage.getItem("optionCuntry")
-				formData.cinema = localStorage.getItem("optionCinema")
 				formData.categorie= localStorage.getItem("optiongenre")
 				formData.partner= localStorage.getItem("optionpartner")
 				formData.image = url
 				formData.video = urlV
 				formData.imagesStars = urls
+				formData.listProjection = projection
+				console.log("projection"+projection)
 				console.log("url Image"+url)
 				console.log("url video"+urlV)
 				console.log(formData);
@@ -307,13 +311,20 @@ for (let i = 0; i < images.length; i++) {
 		  });
 		
 	  };
+//function show Partner 
+const [showDiv, setShowDiv] = useState(false);
 
-	  //select country 
+  const toggleDiv = () => {
+    setShowDiv(!showDiv);
+  };
+	  //select cinema 
 	  useEffect(() => {
 		const fetchData = async () => {
-			const response = await axios.get(urlCountry);
+			const response = await axios.get(urlCinema);
+			const responseCategorie = await axios.get(urlCategorie);
 			const responsePart = await axios.get(urlPartner);
-			setCountries(response.data);
+			setCinemas(response.data);
+			setCategories(responseCategorie.data);
 			setPartners(responsePart.data);
 		}
 		fetchData();
@@ -345,7 +356,7 @@ for (let i = 0; i < images.length; i++) {
 											  onChange={(e)=>{
 												setUploadImage(e.target.files[0])
 											 }}
-							required/>
+							 required/>
 											<img id="form__img" src="#" alt=" "/>
 										</div>
 									</div>
@@ -366,61 +377,99 @@ for (let i = 0; i < images.length; i++) {
 									
 
 									
-									<div className="col-12 col-lg-6">
-									<select id="country" name="country" value={formData.country}  >
-												<option value=""></option>
-												{countries.map(country => {
-													localStorage.setItem(country.name, JSON.stringify(country.cinema));
-													return (
-													<option key={country._id} value={country.name} data-key={country.key}>
-														{country.name}
-													</option>
-													);
-												})}
-											</select>
-									</div>
+									
 
-									<div className="col-12  col-lg-6">
-										<select id="cinema" name="cinema" value={formData.cinema} >
-											<option value=""> </option>
-										</select>
-									</div>
+								
 									<div className="col-12 col-lg-6">
 										<select id="genre" name="categorie" value={formData.categorie}  >
 										<option value=""></option>
-											<option value="Action">Action</option>
-											<option value="Animation">Animation</option>
-											<option value="Comedy">Comedy</option>
-											<option value="Crime">Crime</option>
-											<option value="Drama">Drama</option>
-											<option value="Fantasy">Fantasy</option>
-											<option value="Historical">Historical</option>
-											<option value="Horror">Horror</option>
-											<option value="Romance">Romance</option>
-											<option value="Science-fiction">Science-fiction</option>
-											<option value="Thriller">Thriller</option>
-											<option value="Western">Western</option>
-											<option value="Otheer">Otheer</option>
+										{categories.map(categorie => {
+													return (
+													<option  value={categorie._id}>
+														{categorie.name}
+													</option>
+													);
+												})}
+											
 										</select>
 									</div>
-									<div className="col-12 col-lg-6">
+									<div className="col-12 col-sm-6 col-lg-2">
+										<input type="text" className="form__input" placeholder="Age" name="age" value={formData.age}  onChange={onChange}/>
+									</div>
+									<div className="col-12 col-sm-12 col-lg-6">
 									<select id="partner" name="partner" value={formData.partner}  >
 												<option value=""></option>
 												{partners.map(partner => {
-													//localStorage.setItem(JSON.stringify(partner));
-													return (
+														return (
 													<option  value={partner._id}>
 														{partner.firstName+" "+partner.lastName}
 													</option>
 													);
 												})}
 											</select>
+													
 									</div>
-									<div className="col-12 col-sm-6 col-lg-2">
-										<input type="text" className="form__input" placeholder="Age" name="age" value={formData.age}  onChange={onChange}/>
-									</div>
-
+									
+									
+									<div className="col-2 col-sm-1 col-lg-1">
+										
+										<button className="form__btn_add" type="button" onClick={toggleDiv} >+</button>
+										
+										</div>	
+			
+			<div className="col-12 col-lg-12" style={{ display: showDiv ? "block" : "none" }}>
+			<div className="col-12 col-lg-10">
+									<form action="#" className="form form--profile">
+										<div className="row row--form">
+      <div className="tab-content" id="myTabContent">
+        <div className="tab-pane fade show active" id="tab-1" role="tabpanel" aria-labelledby="1-tab">
+          <div className="col-12">
+            <div className="row">
+              <div className="col-12 col-lg-12">
+                   <div className="row row--form">
+                    <div className="col-12">
+                      <h4 className="form__title">Add New Partner</h4>
+                    </div>
+                    <div className="col-12 col-md-6 col-lg-12 col-xl-6">
+                      <div className="form__group">
+                        <input id="firstName" type="text" name="firstName" className="form__input" placeholder="First Name" value={dataPartner.firstName} onChange={handleChange}  />
+                      </div>
+                    </div>
+                    <div className="col-12 col-md-6 col-lg-12 col-xl-6">
+                      <div className="form__group">
+                        <input id="lastName" type="text" name="lastName" className="form__input" placeholder="Last Name" value={dataPartner.lastName} onChange={handleChange}  />
+                      </div>
+                    </div>
+                    <div className="col-12 col-md-6 col-lg-12 col-xl-6">
+                      <div className="form__group">
+                        <input id="email" type="text" name="email" className="form__input" placeholder="email@email.com" value={dataPartner.email} onChange={handleChange}  />
+                      </div>
+                    </div>
+                    <div className="col-12">
+                      <button className="form__btn" type="button" onClick={handleSubmitPartner}>New Partner</button>
+                    </div>
+                  </div>
+              
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+	  </div>
+	  </form>
+	  </div>
+    </div>
+									
+									
 									<div className="col-10">
+									<div className="form__video">
+											<label id="movie1" for="form__video-upload">Upload video</label>
+											<input data-name="#movie1" id="form__video-upload" name="video"
+                                             className="form__video-upload" type="file" accept="video/mp4,video/x-m4v,video/*"
+											   onChange={(e)=>{
+												setUploadVideo(e.target.files[0])
+											 }}/>
+										</div>
 										<div className="form__gallery">
 											<label id="gallery1" htmlFor="form__gallery-upload">Upload photos Stars</label>
 											<input data-name="#gallery1" id="form__gallery-upload" name="gallery"
@@ -430,10 +479,11 @@ for (let i = 0; i < images.length; i++) {
 										</div>
 									</div>
 								</div>
+								
 							</div>
 
 							<div className="col-12">
-								<ul className="form__radio">u
+								<ul className="form__radio">
 									<li>
 										<span>Types:</span>
 									</li>
@@ -443,38 +493,47 @@ for (let i = 0; i < images.length; i++) {
 									</li>
 								
 								</ul>
+								
 							</div>
 							
-							<div className="col-12">
+						
 								<div className="row row--form">
-									<div className="col-12">
-										<div className="form__video">
-											<label id="movie1" for="form__video-upload">Upload video</label>
-											<input data-name="#movie1" id="form__video-upload" name="video"
-                                             className="form__video-upload" type="file" accept="video/mp4,video/x-m4v,video/*"
-											   onChange={(e)=>{
-												setUploadVideo(e.target.files[0])
-											 }}/>
-										</div>
-									</div>
+									
+									<div className="col-12 col-lg-11">
+									<form action="#" className="form form--profile">
+										<div className="row row--form">
+									<div className="col-12  col-lg-4">
+										<select id="cinema" name="cinema" value={formData.cinema} >
+										<option value=""></option>
+												{cinemas.map(cinema => {
+														
+													return (
+													<option  value={cinema._id}>
+															{localStorage.setItem(cinema._id,cinema.name)}
 
-									<div className="col-12 col-sm-6 col-lg-4">
-										<input type="date" className="form__input" placeholder="Date " name="date" value={dateS.date}  onChange={onChangeDate} required/>
+														{cinema.name}
+													</option>
+													);
+												})}
+										</select>
 									</div>
-									<div className="col-12 col-6 col-lg-3 ">
-										<input type="time" className="form__input" placeholder="Time Start" name="timestart" value={dateS.timestart}  onChange={onChangeDate} required/>
-									</div>
-
 									<div className="col-12 col-sm-6 col-lg-3">
-										<input type="time" className="form__input" placeholder="Time End" name="timeend" value={dateS.timeend}  onChange={onChangeDate} required/>
+										<input type="date" className="form__input" placeholder="Date " name="date" value={dataproj.date}  onChange={onChangeProjection} />
 									</div>
-									<div className="col-1">
-										<button type="button" className="form__btn" onClick={handleAddToList} >+</button>
+									<div className="col-12 col-6 col-lg-2 ">
+										<input type="time" className="form__input" placeholder="Time Start" name="timestart" value={dataproj.timestart}  onChange={onChangeProjection} />
 									</div>
-				<div className="col-12">
-					<div className="dashbox">
+
+									<div className="col-12 col-sm-6 col-lg-2">
+										<input type="time" className="form__input" placeholder="Time End" name="timeend" value={dataproj.timeend}  onChange={onChangeProjection} />
+									</div>
+									<div className="col-12 col-sm-12 col-lg-1">
+										<button type="button" className="form__btn_add" onClick={handleAddToList} >+</button>
+									</div>
+									<div className="col-12" style={{ display: showDivProj ? "block" : "none" }}>
+			<div className="dashbox">
 						<div className="dashbox__title">
-							<h3><i className=""></i> List Date</h3>
+							<h3><i className=""></i> Projection</h3>
 
 							
 						</div>
@@ -483,32 +542,39 @@ for (let i = 0; i < images.length; i++) {
 							<table className="main__table main__table--dash">
 								<thead>
 									<tr>
+										<th>Cinema</th>
 										<th>Date</th>
 										<th>Time Start</th>
 										<th>Time End</th>
 									</tr>
 								</thead>
 									<tbody>
-									{listDate.map(date => (
+									{ projection.map( proj => (
 										
 										<tr>
+											<td>
+											<div className="main__table-text">{localStorage.getItem(proj.cinema)}</div>
+
+											</td>
 										<td>
-											<div className="main__table-text">{date.date}</div>
+											<div className="main__table-text">{proj.date}</div>
 										</td>
 										<td>
-											<div className="main__table-text">{date.timestart}</div>
+											<div className="main__table-text">{proj.timestart}</div>
 										</td>
 										<td>
-											<div className="main__table-text">{date.timeend}</div>
+											<div className="main__table-text">{proj.timeend}</div>
 										</td>
 										</tr>
 									))}
-									</tbody>
+							</tbody>
 							</table>
 						</div>
-					</div>
+				     	</div>
+				 </div>
 				</div>
-				
+				</form>
+				</div>
 			
 
 									<div className="col-12">
@@ -524,60 +590,13 @@ for (let i = 0; i < images.length; i++) {
       </div>
     )}
 								</div>
-							</div>
+							
 						</div>
 					</form>
 				</div>
 			</div>
 		</div>
-		<div className="tab-content" id="myTabContent">
-					<div className="tab-pane fade show active" id="tab-1" role="tabpanel" aria-labelledby="1-tab">
-						<div className="col-12">
-							<div className="row">
-								<div className="col-12 col-lg-6">
-									<form action="#" className="form " method="post" onSubmit={handleSubmitPartner}>
-										<div className="row row--form">
-											<div className="col-12">
-												<h4 className="form__title">Add New Partner</h4>
-											</div>
-
-											
-											<div className="col-12 col-md-6 col-lg-12 col-xl-6">
-												<div className="form__group">
-													<input id="firstName" type="text" name="firstName" className="form__input" placeholder="First Name" value={dataPartner.firstName}  onChange={handleChange} required/>
-												</div>
-											</div>
-											<div className="col-12 col-md-6 col-lg-12 col-xl-6">
-												<div className="form__group">
-													<input id="lastName" type="text" name="lastName" className="form__input" placeholder="Last Name" value={dataPartner.lastName}  onChange={handleChange} required/>
-												</div>
-											</div>
-											
-											<div className="col-12 col-md-6 col-lg-12 col-xl-6">
-												<div className="form__group">
-													<input id="email" type="text" name="email" className="form__input" placeholder="email@email.com" value={dataPartner.email}  onChange={handleChange} required/>
-												</div>
-											</div>
-											
-
-											
-										
-
-											<div className="col-12">
-											<button className="form__btn" type="submit">Add Partner</button>
-														</div>
-										</div>
-									</form>
-								</div>
-							
-								
-							</div>
-						</div>	
-					</div>
-
-					
-					
-				</div>
+		
 	</main>
         </Fragment>
     )

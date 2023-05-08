@@ -12,14 +12,7 @@ const filmSchema = mongoose.Schema(
       type: String,
       required: [true, "Please add an description"],
     }, 
-    country: {
-      type: String,
-      required: [true, "Please add a end Country"],
-    },
-    cinema: {
-      type: String,
-      required: [true, "Please add a end cinema"],
-    },
+   
     categorie: {
       type: String,
       required: [true, "Please add a end cinema"],
@@ -37,19 +30,6 @@ const filmSchema = mongoose.Schema(
       type: String,
       required: [true, "Please add a end type"],
     },
-    date: {
-      type: Date,
-          
-      required: [true, "Please add an start time"],
-    }, 
-    timestart: {
-      type: String,
-      required: [true, "Please add an start time"],
-    },
-    timeend: {
-      type: String,
-      required: [true, "Please add a end time"],
-    }, 
     image: {
       type: String,
       required: [true, "Please add a image"],
@@ -60,12 +40,10 @@ const filmSchema = mongoose.Schema(
     },
     imagesStars:{
       type: [String],
-      //equired: [true, "Please add a video"],
+      //required: [true, "Please add a video"],
     },
-    listDate: {
-      date: { type: Date },
-      timestart: { type: String },
-      timeend: { type: String },
+    listProjection: {
+      type: []
     }
     
   },

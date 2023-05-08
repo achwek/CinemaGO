@@ -93,6 +93,7 @@ $(document).ready(function () {
 		console.log("select cinema: "+selectedValue);
 	});
 //country selected
+/*
 $('#country').select2({
 	placeholder: "Choose country"
   }).on('change', async function() {
@@ -114,7 +115,7 @@ $('#country').select2({
 	  console.error("Cinema list is empty or undefined.");
 	 // alert("Failed to retrieve cinema list for selected country.");
 	}
-  });
+  });*/
   
   
 

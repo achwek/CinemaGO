@@ -5,159 +5,287 @@ import Sidebar from "../components/Sidebar";
 import { storage } from "../config/firebaseConfig";
 import { useNavigate } from "react-router-dom"
 
+import {formatDate} from "./formatDate";
 
 
 function UpdateFilm(){
-	const [Film, setFilm] = useState([]);
 
-	//const Film update
-	const idFilm= localStorage.getItem("idFilm");
-	console.log(idFilm);
 	// declaration const
-	const urlGetFilmById="http://localhost:5000/add-film"
-	const urlUpdateFilm ="http://localhost:5000/add-film"
-	const urlCountry="http://localhost:5000/country"
+	const urlAddFilm ="http://localhost:5000/api/film"
+	const urlCinema="http://localhost:5000/api/cinema"
+	const urlCategorie="http://localhost:5000/api/categorie"
+	const urlPartner="http://localhost:5000/api/partner"
 	const navigate = useNavigate()
 	const [uploadImage, setUploadImage]= useState('');
 	const [url, setUrl] = useState('');
+	// Create state variables for progress and progress message
+const [uploadProgress, setUploadProgress] = useState(0);
+const [progressMessage, setProgressMessage] = useState("");
+  //Liste Date
+  const [projection, setProjection] = useState([]);
 
+  const [dataproj, setDateProj] = useState({
+	cinema:'',
+    date: '',
+    timestart: '',
+    timeend: ''
+  });
+
+//video
 	const [uploadVideo ,setUploadVideo]= useState('');
 	const [urlV, setUrlV] = useState('');
 //images Start
 	const [images, setImages] = useState([]);
   const [urls, setUrls] = useState([]);
-  //country and cinema
-  const [countries, setCountries] = useState([]);
+  // cinema
   const [cinemas, setCinemas] = useState([]);
+   // categorie
+ const [categories, setCategories] = useState([]);
+ //Partner
+const [partners, setPartners] = useState([]);
 
- 
+ // Add Partner
+ const [dataPartner, setDataPartner] = useState({
+	firstName: "",
+	lastName: "",
+	email: "",
+});
 
-//const countryCinema = async axios.get(urlCountry, )
+
+
+//onChange For Partner
+const handleChange = (e) => {
+    // Récupérer le nom du champ et sa valeur
+    const fieldName = e.target.name;
+    const fieldValue = e.target.value;
+
+    // Mettre à jour l'état en conséquence
+    setDataPartner({
+      ...dataPartner, // Copier l'objet dataPartner existant
+      [fieldName]: fieldValue // Mettre à jour la propriété correspondante
+    });
+  };
+
+const onChangeProjection = (e) => {
+	// Extract the name and value of the input that triggered the change event
+	const { name, value } = e.target;
+  
+	// Update the state of the form data with the new input value
+	// by creating a new object that merges the previous state with the updated value
+	setDateProj(prevDataProj => ({ ...prevDataProj, [name]: value }));
+  };
+  
+  
+  const handleSubmitPartner = async (e) => {
+	e.preventDefault(); // Empêcher la soumission du formulaire
+  
+
+  
+	// Faire une requête HTTP avec les données du formulaire
+	try {
+	  // Construire l'objet de données à envoyer dans la requête
+	  const {
+		firstName,
+		lastName,
+		email
+	  }= dataPartner;
+  
+	  // Envoyer la requête POST à l'API avec les données du formulaire
+	  const response = await axios.post(urlPartner, dataPartner);
+  	setDataPartner({
+		firstName: "",
+		lastName: "",
+		email: ""
+		// Reset other form fields as needed
+	});
+
+	try {
+		const responsePart = await axios.get(urlPartner);
+		setPartners(responsePart.data);
+		console.log(responsePart.data);
+	} catch (error) {
+		// Handle error
+		console.error(error);
+	}
+	} catch (error) {
+	  // Erreur lors de la requête HTTP
+	  console.error('Erreur lors de la soumission du formulaire :', error.message);
+	  // Gérer l'erreur de soumission du formulaire
+	}
+  };
+  
+
+
+  //function pour ajouter liste date
+// Fonction pour ajouter les données dans la liste ListDate
+const handleAddToList = () => {
+	console.log(dataproj);
+	dataproj.cinema= localStorage.getItem("optionCinema")
+	if (dataproj.cinema !== '' && dataproj.date !== '' && dataproj.timestart !== '' && dataproj.timeend !== '') {
+		const  newProj = {
+		cinema: dataproj.cinema,
+		date: dataproj.date,
+		timestart: dataproj.timestart,
+		timeend: dataproj.timeend
+	  };
+	  setProjection(prevProjections => [...prevProjections, newProj]); // Update with newDate instead of dateS
+
+	  setDateProj({
+		cinema: '',
+		date: '',
+		timestart: '',
+		timeend: ''
+	  });
+	 console.log(projection)
+	 
+	}
+
+};
+
+  
 
 		const [formData, setFormData] = useState({
 		title: "",
 		description: "",
-		country: localStorage.getItem("optionCountry"),
-		cinema: localStorage.getItem("optionCinema"),
-		categorie: localStorage.getItem("optionCategorie"),
+		categorie: "",
+		partner:"",
 		age:"",
 		type: "",
-		date:"",
-		timestart: "",
-		timeend: "",
 		image: "",
 		video: "",
 		imagesStars:[],
+		listProjection:[],
 	  });
 	  const {
 		title,
 		description,
-		country,
-		cinema,
 		categorie,
+		partner,
 		age,
 		type,
-		date,
-		timestart,
-		timeend,
 		image,
 		video,
 		imagesStars,
+		listProjection,
 	  } = formData;
 	 
 	
 		//submit button
-	  const handleSubmit = async(e) => {
+	//submit button
+const handleSubmit = async (e) => {
+	e.preventDefault(); // Prevent the default submit and page reload
+  
+			// Send image to Firebase Storage
+			const uploadTask = storage.ref(`images/${uploadImage.name}`).put(uploadImage);
 
-	// Prevent the default submit and page reload
-		e.preventDefault();			
-		
-		//send image firebase
-
-		const uploadTask = storage.ref(`images/${uploadImage.name}`).put(uploadImage);
-
-		await uploadTask.on('state_changed',
-		  (snapshot) => {
-			// Progress
-		  },
-		  (error) => {
-			// Error
+		uploadTask.on(
+		"state_changed",
+		(snapshot) => {
+			// Handle upload progress
+			// You can access the progress using snapshot.bytesTransferred and snapshot.totalBytes
+		},
+		(error) => {
+			// Handle upload error
 			console.log(error);
-		  },
-		 	async () => {
-			// Completed
-			await storage.ref('images').child(uploadImage.name).getDownloadURL().then((downloadUrl) => {
-			  setUrl(downloadUrl);
-			  console.log(url);
-			});
-		  }
+		},
+		async () => {
+			// Handle upload success
+			const downloadUrl = await storage.ref("images").child(uploadImage.name).getDownloadURL();
+			setUrl(downloadUrl);
+			console.log(url);
+		}
 		);
 
-		// Upload video
-		const uploadTaskVideo = storage.ref(`videos/${uploadVideo.name}`).put(uploadVideo);
-
-			await uploadTaskVideo.on('state_changed',
-			(snapshot) => {
-				// Progress
-			},
-			(error) => {
-				// Error
-				console.log(error);
-			},
-			async() => {
-				// Completed
-				await storage.ref('videos').child(uploadVideo.name).getDownloadURL().then((downloadUrlV) => {
-				setUrlV(downloadUrlV);
-				});
-			}
-			);
-				//upload Images Start
-						//send list of images to Firebase Storage
-		for (let i = 0; i < images.length; i++) {
-			const uploadTaskStart = storage.ref(`imagesStart/${images[i].name}`).put(images[i]);
-			await uploadTaskStart.on('state_changed',
-			(snapshot) => {
-				// Progress
-			},
-			(error) => {
-				// Error
-				console.log(error);
-			},
-			async () => {
-				// Completed
-				const downloadUrlStart = await storage.ref('imagesStart').child(images[i].name).getDownloadURL();
-				setUrls((prevUrls) => [...prevUrls, downloadUrlStart]);
-				console.log(downloadUrlStart);
-			}
-			);
-		}
 		
-				// Use destructuring to get form data fields from state
-				formData.country = localStorage.getItem("optionCuntry")
-				formData.cinema = localStorage.getItem("optionCinema")
+// Upload video to Firebase Storage
+const uploadTaskVideo = storage.ref(`videos/${uploadVideo.name}`).put(uploadVideo);
+
+uploadTaskVideo.on(
+  "state_changed",
+  (snapshot) => {
+    // Handle upload progress
+    // You can access the progress using snapshot.bytesTransferred and snapshot.totalBytes
+    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    console.log(`Upload progress: ${progress}%`);
+  },
+  (error) => {
+    // Handle upload error
+    console.log(error);
+  },
+  async () => {
+    // Handle upload success
+    const downloadUrlV = await storage.ref("videos").child(uploadVideo.name).getDownloadURL();
+    setUrlV(downloadUrlV);
+  }
+);
+
+  
+	// Upload Images Start to Firebase Storage
+	const urls = []; // Create an array to store download URLs
+// Send list of images to Firebase Storage
+for (let i = 0; i < images.length; i++) {
+  const uploadTaskStart = storage.ref(`imagesStart/${images[i].name}`).put(images[i]);
+  uploadTaskStart.on(
+    "state_changed",
+    (snapshot) => {
+      // Handle upload progress
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      // Update state with progress percentage
+      setUploadProgress(progress);
+      // Update progress message
+      setProgressMessage(`Uploading image ${i + 1} of ${images.length}: ${progress.toFixed(2)}%`);
+    },
+    (error) => {
+      // Handle upload error
+      console.log(error);
+    },
+    async () => {
+      // Handle upload success
+      const downloadUrlStart = await storage.ref("imagesStart").child(images[i].name).getDownloadURL();
+      urls.push(downloadUrlStart);
+      console.log(downloadUrlStart);
+      // Check if all images are uploaded
+  
+  if (urls.length == images.length) {
+			// Use destructuring to get form data fields from state
+			console.log("date: " + formData.date);
+			console.log("url Image" + url);
+			console.log("url video" + urlV);
+			console.log(formData);
+			console.log("liste Images Start" + images);
+			console.log("liste Url Images Start" + urls);
+  
+			// Create an object 
 				formData.categorie= localStorage.getItem("optiongenre")
+				formData.partner= localStorage.getItem("optionpartner")
 				formData.image = url
 				formData.video = urlV
 				formData.imagesStars = urls
+				formData.listProjection = projection
+				console.log("projection"+projection)
 				console.log("url Image"+url)
 				console.log("url video"+urlV)
 				console.log(formData);
 				console.log("liste Images Start"+images)
 				console.log("liste Url Images Start"+urls)
-
-
-		await axios.put(urlUpdateFilm, formData, navigate('/edit-film')
-		)
-		.then(response => {
-		  console.log(response);
-		  window.location.reload(true);
-		  // Handle response
-		})
-		.catch(error => {
-		  console.error(error);
-		  // Handle error
-		});
-	  };
+			// Send POST request to server
+			await axios
+			  .post(urlAddFilm, formData)
+			  .then((response) => {
+				console.log(response);
+				window.location.reload(true);
+				// Handle response
+			  })
+			  .catch((error) => {
+				console.error(error);
+				// Handle error
+			  });
+		  }
+		}
+	  );
+	}
+  };
+  
 	 
 	  const onChange = (event) => {		
 		const target = event.target;
@@ -171,22 +299,26 @@ function UpdateFilm(){
 		  });
 		
 	  };
+//function show Partner 
+const [showDiv, setShowDiv] = useState(false);
 
-	  //select country 
+  const toggleDiv = () => {
+    setShowDiv(!showDiv);
+  };
+	  //select cinema 
 	  useEffect(() => {
-		const fetchCountriesAndFilm = async () => {
-		  const responseCountry = await axios.get(urlCountry);
-		  setCountries(responseCountry.data);
-		  
-		  const idFilm = localStorage.getItem("idFilm");
-		  const responseFilm = await axios.get(`${urlGetFilmById}/${idFilm}`);
-		  setFormData(responseFilm.data);
-		   console.log(responseFilm.data);
-		};
-		fetchCountriesAndFilm();
+		const fetchData = async () => {
+			const response = await axios.get(urlCinema);
+			const responseCategorie = await axios.get(urlCategorie);
+			const responsePart = await axios.get(urlPartner);
+			setCinemas(response.data);
+			setCategories(responseCategorie.data);
+			setPartners(responsePart.data);
+		}
+		fetchData();
 	  }, []);
 	
-	
+  
     return(
         <Fragment>
             <Header></Header>
@@ -196,7 +328,7 @@ function UpdateFilm(){
 			<div className="row">
 				<div className="col-12">
 					<div className="main__title">
-						<h2>Update Film : {formData.title} </h2>
+						<h2>Add New Film</h2>
 					</div>
 				</div>
 				
@@ -222,69 +354,95 @@ function UpdateFilm(){
 							<div className="col-12 col-md-7 form__content">
 								<div className="row row--form">
 									<div className="col-12">
-										<input type="text" className="form__input" placeholder="Title" name="title"  value={formData.title}  onChange={onChange} required/>
+										<input type="text" className="form__input" placeholder="Title" name="title" value={formData.title}  onChange={onChange} required/>
 									</div>
 
 									<div className="col-12">
 										<textarea id="text" name="description" className="form__textarea" placeholder="Description" value={formData.description}  onChange={onChange} required></textarea>
 									</div>
 
-									<div className="col-12 col-sm-6 col-lg-4">
-										<input type="date" className="form__input" placeholder="Date " name="date" value={formData.date}  onChange={onChange} required/>
-									</div>
-									<div className="col-12 col-6 col-lg-3 ">
-										<input type="time" className="form__input" placeholder="Time Start" name="timestart" value={formData.timestart}  onChange={onChange} required/>
-									</div>
-
-									<div className="col-12 col-sm-6 col-lg-3">
-										<input type="time" className="form__input" placeholder="Time End" name="timeend" value={formData.timeend}  onChange={onChange} required/>
-									</div>
-
+									
 									
 
+									
+									
+
+								
+									<div className="col-12 col-lg-6">
+										<select id="genre" name="categorie" value={formData.categorie}  >
+										<option value=""></option>
+										{categories.map(categorie => {
+													return (
+													<option  value={categorie._id}>
+														{categorie.name}
+													</option>
+													);
+												})}
+											
+										</select>
+									</div>
 									<div className="col-12 col-sm-6 col-lg-2">
 										<input type="text" className="form__input" placeholder="Age" name="age" value={formData.age}  onChange={onChange}/>
 									</div>
-
-									<div className="col-12 col-lg-6">
-									<select id="country" name="country" value={formData.country}  >
+									<div className="col-12 col-sm-12 col-lg-6">
+									<select id="partner" name="partner" value={formData.partner}  >
 												<option value=""></option>
-												{countries.map(country => {
-													localStorage.setItem(country.name, JSON.stringify(country.cinema));
-													return (
-													<option key={country._id} value={country.name} data-key={country.key}>
-														{country.name}
+												{partners.map(partner => {
+														return (
+													<option  value={partner._id}>
+														{partner.firstName+" "+partner.lastName}
 													</option>
 													);
 												})}
 											</select>
+													
 									</div>
-
-									<div className="col-12  col-lg-6">
-										<select id="cinema" name="cinema" value={formData.cinema} >
-											<option value=""> </option>
-										</select>
-									</div>
-									<div className="col-12 col-lg-6">
-										<select id="genre" name="categorie" value={formData.categorie}   >
-										<option value=""></option>
-											<option value="Action" >Action</option>
-											<option value="Animation">Animation</option>
-											<option value="Comedy">Comedy</option>
-											<option value="Crime">Crime</option>
-											<option value="Drama">Drama</option>
-											<option value="Fantasy">Fantasy</option>
-											<option value="Historical">Historical</option>
-											<option value="Horror">Horror</option>
-											<option value="Romance">Romance</option>
-											<option value="Science-fiction">Science-fiction</option>
-											<option value="Thriller">Thriller</option>
-											<option value="Western">Western</option>
-											<option value="Otheer">Otheer</option>
-										</select>
-									</div>
-
-									<div className="col-12">
+									
+									
+									<div className="col-2 col-sm-1 col-lg-1">
+										
+										<button className="form__btn" type="button" onClick={toggleDiv} >New Partner</button>
+										
+										</div>	
+										<div className="col-12 col-lg-12" style={{ display: showDiv ? "block" : "none" }}>
+      <div className="tab-content" id="myTabContent">
+        <div className="tab-pane fade show active" id="tab-1" role="tabpanel" aria-labelledby="1-tab">
+          <div className="col-12">
+            <div className="row">
+              <div className="col-12 col-lg-12">
+                   <div className="row row--form">
+                    <div className="col-12">
+                      <h4 className="form__title">Add New Partner</h4>
+                    </div>
+                    <div className="col-12 col-md-6 col-lg-12 col-xl-6">
+                      <div className="form__group">
+                        <input id="firstName" type="text" name="firstName" className="form__input" placeholder="First Name" value={dataPartner.firstName} onChange={handleChange}  />
+                      </div>
+                    </div>
+                    <div className="col-12 col-md-6 col-lg-12 col-xl-6">
+                      <div className="form__group">
+                        <input id="lastName" type="text" name="lastName" className="form__input" placeholder="Last Name" value={dataPartner.lastName} onChange={handleChange}  />
+                      </div>
+                    </div>
+                    <div className="col-12 col-md-6 col-lg-12 col-xl-6">
+                      <div className="form__group">
+                        <input id="email" type="text" name="email" className="form__input" placeholder="email@email.com" value={dataPartner.email} onChange={handleChange}  />
+                      </div>
+                    </div>
+                    <div className="col-12">
+                      <button className="form__btn" type="button" onClick={handleSubmitPartner}>+</button>
+                    </div>
+                  </div>
+              
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+									
+									
+									<div className="col-10">
 										<div className="form__gallery">
 											<label id="gallery1" htmlFor="form__gallery-upload">Upload photos Stars</label>
 											<input data-name="#gallery1" id="form__gallery-upload" name="gallery"
@@ -321,12 +479,91 @@ function UpdateFilm(){
 											 }}/>
 										</div>
 									</div>
+									<div className="col-12  col-lg-4">
+										<select id="cinema" name="cinema" value={formData.cinema} >
+										<option value=""></option>
+												{cinemas.map(cinema => {
+														
+													return (
+													<option  value={cinema._id}>
+															{localStorage.setItem(cinema._id,cinema.name)}
 
-									
+														{cinema.name}
+													</option>
+													);
+												})}
+										</select>
+									</div>
+									<div className="col-12 col-sm-6 col-lg-4">
+										<input type="date" className="form__input" placeholder="Date " name="date" value={dataproj.date}  onChange={onChangeProjection} />
+									</div>
+									<div className="col-12 col-6 col-lg-2 ">
+										<input type="time" className="form__input" placeholder="Time Start" name="timestart" value={dataproj.timestart}  onChange={onChangeProjection} />
+									</div>
+
+									<div className="col-12 col-sm-6 col-lg-2">
+										<input type="time" className="form__input" placeholder="Time End" name="timeend" value={dataproj.timeend}  onChange={onChangeProjection} />
+									</div>
+									<div className="col-12 col-sm-12 col-lg-1">
+										<button type="button" className="form__btn" onClick={handleAddToList} >+</button>
+									</div>
+				<div className="col-12">
+					<div className="dashbox">
+						<div className="dashbox__title">
+							<h3><i className=""></i> Projection</h3>
+
+							
+						</div>
+
+						<div className="dashbox__table-wrap">
+							<table className="main__table main__table--dash">
+								<thead>
+									<tr>
+										<th>Cinema</th>
+										<th>Date</th>
+										<th>Time Start</th>
+										<th>Time End</th>
+									</tr>
+								</thead>
+									<tbody>
+									{ projection.map( proj => (
+										
+										<tr>
+											<td>
+											<div className="main__table-text">{localStorage.getItem(proj.cinema)}</div>
+
+											</td>
+										<td>
+											<div className="main__table-text">{proj.date}</div>
+										</td>
+										<td>
+											<div className="main__table-text">{proj.timestart}</div>
+										</td>
+										<td>
+											<div className="main__table-text">{proj.timeend}</div>
+										</td>
+										</tr>
+									))}
+							</tbody>
+							</table>
+						</div>
+				     	</div>
+				 </div>
+				
+			
 
 									<div className="col-12">
-										<button type="submit" className="form__btn" >Update Film</button>
+										<button type="submit" className="form__btn" >Add Film</button>
 									</div>
+									 {/* Render progress bar only when upload is in progress */}
+    {uploadProgress > 0 && (
+      <div>
+        {/* Render progress bar */}
+        <progress value={uploadProgress} max={100} />
+        {/* Render progress message */}
+        <p>{progressMessage}</p>
+      </div>
+    )}
 								</div>
 							</div>
 						</div>
@@ -334,6 +571,7 @@ function UpdateFilm(){
 				</div>
 			</div>
 		</div>
+		
 	</main>
         </Fragment>
     )

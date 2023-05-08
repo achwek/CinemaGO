@@ -11,6 +11,7 @@ import EditUser from './pages/edit-user';
 import AddFilm from './pages/add-film';
 import EditFilm from './pages/edit-film';
 import UpdateFilm from './pages/update-Film';
+import Partner from './pages/partner';
 
 import Error from './pages/404';
 import ForgotPassword from './pages/forgot-password';
@@ -30,6 +31,7 @@ function App() {
         <Route path='/add-film' element={<AddFilm/>}></Route>
         <Route path='/edit-film' element={<EditFilm/>}></Route>
         <Route path='/update-Film' element={<UpdateFilm/>}></Route>
+        <Route path='/partner' element={<Partner/>}></Route>
        
         <Route path='/error' element={<Error/>}></Route>
         <Route path='/forgotPassword' element={<ForgotPassword/>}></Route>

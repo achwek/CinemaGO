@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios'
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
+import UpdateFilm from "./update-Film";
 import {formatDate} from "./formatDate";
 	
 function EditFilm(){
@@ -43,7 +44,7 @@ function EditFilm(){
 					<div className="main__title">
 						<h2>Films</h2>
 
-						<span className="main__title-stat">14,452 Total</span>
+						<span className="main__title-stat">{Films.length} Total</span>
 
 						<div className="main__title-wrap">
 							<div className="filter" id="filter__sort">
@@ -173,7 +174,7 @@ function EditFilm(){
 			<button className="modal__btn modal__btn--dismiss" type="button">Dismiss</button>
 		</div>
 	</div>
-
+	
         </Fragment>
     )
 }
