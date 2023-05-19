@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios'
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
-import UpdateFilm from "./update-Film";
+import DeleteModal from "./deleteModal";
 import {formatDate} from "./formatDate";
 	
 function EditFilm(){
@@ -18,6 +18,18 @@ function EditFilm(){
 		localStorage.setItem('idFilm', id);
 		// perform other update operations
 	  }
+
+	  const deleteFilm = async (id) => {
+		try {
+		  await axios.delete(`${urlGetFilm}/${id}`);
+		  const response = await axios.get(urlGetFilm);
+		  setFilms(response.data);
+		} catch (error) {
+		  // gérer les erreurs
+		}
+	  };
+	  
+	  
 
  //Get Film
  useEffect(() => {
@@ -123,9 +135,8 @@ function EditFilm(){
 											<Link to="/update-Film" className="main__table-btn main__table-btn--edit"  onClick={() => handleEditMovie(Film._id)}>
 												<i className="icon ion-ios-create"></i>
 											</Link>
-											<a href="#modal-delete" className="main__table-btn main__table-btn--delete open-modal">
-												<i className="icon ion-ios-trash"></i>
-											</a>
+											<DeleteModal onDelete={() => deleteFilm(Film._id)} title={"Film"}/>
+
 										</div>
 									</td>
 								</tr>

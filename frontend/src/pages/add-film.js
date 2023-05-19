@@ -184,118 +184,128 @@ const handleAddToList = () => {
 	
 		//submit button
 	//submit button
-const handleSubmit = async (e) => {
-	e.preventDefault(); // Prevent the default submit and page reload
-  
-			// Send image to Firebase Storage
-			const uploadTask = storage.ref(`images/${uploadImage.name}`).put(uploadImage);
-
+	const handleSubmit = async (e) => {
+		e.preventDefault(); // Prevent the default submit and page reload
+	
+		// Send image to Firebase Storage
+		const uploadTask = storage.ref(`images/${uploadImage.name}`).put(uploadImage);
+	
 		uploadTask.on(
-		"state_changed",
-		(snapshot) => {
-			// Handle upload progress
-			// You can access the progress using snapshot.bytesTransferred and snapshot.totalBytes
-		},
-		(error) => {
-			// Handle upload error
-			console.log(error);
-		},
-		async () => {
-			// Handle upload success
-			const downloadUrl = await storage.ref("images").child(uploadImage.name).getDownloadURL();
-			setUrl(downloadUrl);
-			console.log(url);
-		}
+			"state_changed",
+			(snapshot) => {
+				// Handle upload progress
+				// You can access the progress using snapshot.bytesTransferred and snapshot.totalBytes
+			},
+			(error) => {
+				// Handle upload error
+				console.log(error);
+			},
+			async () => {
+				// Handle upload success
+				const downloadUrl = await storage.ref("images").child(uploadImage.name).getDownloadURL();
+				setUrl(downloadUrl);
+				console.log(url);
+					// Upload video to Firebase Storage
+		const uploadTaskVideo = storage.ref(`videos/${uploadVideo.name}`).put(uploadVideo);
+	
+		await new Promise((resolve, reject) => {
+			uploadTaskVideo.on(
+				"state_changed",
+				(snapshot) => {
+					// Handle upload progress
+					// You can access the progress using snapshot.bytesTransferred and snapshot.totalBytes
+					const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+					console.log(`Upload progress: ${progress}%`);
+				},
+				(error) => {
+					// Handle upload error
+					console.log(error);
+					reject(error);
+				},
+				async () => {
+					// Handle upload success
+					const downloadUrlV = await storage.ref("videos").child(uploadVideo.name).getDownloadURL();
+					setUrlV(downloadUrlV);
+					resolve();
+							// Send list of images to Firebase Storage
+		const urls = []; // Create an array to store download URLs
+		if (images.length > 0) {
+ 	 images.map((image, i) => {
+    const uploadTaskStart = storage.ref(`imagesStart/${image.name}`).put(image);
+    uploadTaskStart.on(
+      "state_changed",
+      (snapshot) => {
+        // Handle upload progress
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        // Update state with progress percentage
+        setUploadProgress(progress);
+        // Update progress message
+        setProgressMessage(`Uploading image ${i + 1} of ${images.length}: ${progress.toFixed(2)}%`);
+      },
+      (error) => {
+        // Handle upload error
+        console.log(error);
+      },
+      async () => {
+        // Handle upload success
+        const downloadUrlStart = await storage.ref("imagesStart").child(image.name).getDownloadURL();
+        urls.push(downloadUrlStart);
+        console.log(downloadUrlStart);
+        // Check if all images are uploaded
+        if (urls.length == images.length) {
+          // Use destructuring to get form data fields from state
+          console.log("date: " + formData.date);
+          console.log("url Image" + url);
+          console.log("url video" + urlV);
+          console.log(formData);
+          console.log("liste Images Start" + images);
+          console.log("liste Url Images Start" + urls);
+
+          // Create an object 
+          formData.categorie = localStorage.getItem("optiongenre");
+          formData.partner = localStorage.getItem("optionpartner")
+          formData.image = url
+          formData.video = urlV
+          formData.imagesStars = urls
+          formData.listProjection = projection
+          console.log("projection" + projection)
+          console.log("url Image" + url)
+          console.log("url video" + urlV)
+          console.log(formData);
+          console.log("liste Images Start" + images)
+          console.log("liste Url Images Start" + urls)
+
+          // Send POST request to server
+          await axios
+            .post(urlAddFilm, formData)
+            .then((response) => {
+              console.log(response);
+              window.location.reload(true);
+              // Handle response
+            })
+            .catch((error) => {
+              console.error(error);
+              // Handle error
+            });
+        }
+      }
+    );
+  });
+} else {
+  // Handle case where images is not defined or is empty
+  console.log("Images is empty or not defined");
+}
+				}
+			);
+		});
+			}
 		);
+	
+	
+	
+
 
 		
-// Upload video to Firebase Storage
-const uploadTaskVideo = storage.ref(`videos/${uploadVideo.name}`).put(uploadVideo);
-
-uploadTaskVideo.on(
-  "state_changed",
-  (snapshot) => {
-    // Handle upload progress
-    // You can access the progress using snapshot.bytesTransferred and snapshot.totalBytes
-    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-    console.log(`Upload progress: ${progress}%`);
-  },
-  (error) => {
-    // Handle upload error
-    console.log(error);
-  },
-  async () => {
-    // Handle upload success
-    const downloadUrlV = await storage.ref("videos").child(uploadVideo.name).getDownloadURL();
-    setUrlV(downloadUrlV);
-  }
-);
-
-  
-	// Upload Images Start to Firebase Storage
-	const urls = []; // Create an array to store download URLs
-// Send list of images to Firebase Storage
-for (let i = 0; i < images.length; i++) {
-  const uploadTaskStart = storage.ref(`imagesStart/${images[i].name}`).put(images[i]);
-  uploadTaskStart.on(
-    "state_changed",
-    (snapshot) => {
-      // Handle upload progress
-      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      // Update state with progress percentage
-      setUploadProgress(progress);
-      // Update progress message
-      setProgressMessage(`Uploading image ${i + 1} of ${images.length}: ${progress.toFixed(2)}%`);
-    },
-    (error) => {
-      // Handle upload error
-      console.log(error);
-    },
-    async () => {
-      // Handle upload success
-      const downloadUrlStart = await storage.ref("imagesStart").child(images[i].name).getDownloadURL();
-      urls.push(downloadUrlStart);
-      console.log(downloadUrlStart);
-      // Check if all images are uploaded
-  
-  if (urls.length == images.length) {
-			// Use destructuring to get form data fields from state
-			console.log("date: " + formData.date);
-			console.log("url Image" + url);
-			console.log("url video" + urlV);
-			console.log(formData);
-			console.log("liste Images Start" + images);
-			console.log("liste Url Images Start" + urls);
-  
-			// Create an object 
-				formData.categorie= localStorage.getItem("optiongenre")
-				formData.partner= localStorage.getItem("optionpartner")
-				formData.image = url
-				formData.video = urlV
-				formData.imagesStars = urls
-				formData.listProjection = projection
-				console.log("projection"+projection)
-				console.log("url Image"+url)
-				console.log("url video"+urlV)
-				console.log(formData);
-				console.log("liste Images Start"+images)
-				console.log("liste Url Images Start"+urls)
-			// Send POST request to server
-			await axios
-			  .post(urlAddFilm, formData)
-			  .then((response) => {
-				console.log(response);
-				window.location.reload(true);
-				// Handle response
-			  })
-			  .catch((error) => {
-				console.error(error);
-				// Handle error
-			  });
-		  }
-		}
-	  );
-	}
   };
   
 	 
@@ -474,7 +484,7 @@ const [showDiv, setShowDiv] = useState(false);
 											<label id="gallery1" htmlFor="form__gallery-upload">Upload photos Stars</label>
 											<input data-name="#gallery1" id="form__gallery-upload" name="gallery"
                                              className="form__gallery-upload" type="file" accept=".png, .jpg, .jpeg" onChange={(event) => {
-												setImages(event.target.files);
+												setImages(Array.from(event.target.files));
 											  }} multiple/>
 										</div>
 									</div>
@@ -499,7 +509,7 @@ const [showDiv, setShowDiv] = useState(false);
 						
 								<div className="row row--form">
 									
-									<div className="col-12 col-lg-11">
+									<div className="col-12 col-lg-12">
 									<form action="#" className="form form--profile">
 										<div className="row row--form">
 									<div className="col-12  col-lg-4">

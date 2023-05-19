@@ -1,21 +1,33 @@
 import React, { Fragment , useState,useEffect } from "react";
+import { Link } from 'react-router-dom';
 import axios from 'axios'
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { storage } from "../config/firebaseConfig";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from 'react-router-dom';
 
-import {formatDate} from "./formatDate";
+import DeleteModal from "./deleteModal";
+import UpdateModal from "./updateModal";
+import CinemaSelect from "./cinemaSelect"
 
 
 function UpdateFilm(){
+	const navigate = useNavigate();
 
+	function handleDelete() {
+	  // Code to delete the element
+	
+	  // Navigate the user to the homepage after deletion
+	  navigate('/');
+	}
+	
+	
+	
 	// declaration const
-	const urlAddFilm ="http://localhost:5000/api/film"
+	const urlFilm ="http://localhost:5000/api/film"
 	const urlCinema="http://localhost:5000/api/cinema"
 	const urlCategorie="http://localhost:5000/api/categorie"
 	const urlPartner="http://localhost:5000/api/partner"
-	const navigate = useNavigate()
 	const [uploadImage, setUploadImage]= useState('');
 	const [url, setUrl] = useState('');
 	// Create state variables for progress and progress message
@@ -118,29 +130,31 @@ const onChangeProjection = (e) => {
 
   //function pour ajouter liste date
 // Fonction pour ajouter les données dans la liste ListDate
+const [showDivProj, setShowDivProj] = useState(false);
+// Add a new state variable to keep track of whether the button has been clicked before
+const [clickedBefore, setClickedBefore] = useState(false);
+
 const handleAddToList = () => {
-	console.log(dataproj);
-	dataproj.cinema= localStorage.getItem("optionCinema")
-	if (dataproj.cinema !== '' && dataproj.date !== '' && dataproj.timestart !== '' && dataproj.timeend !== '') {
-		const  newProj = {
-		cinema: dataproj.cinema,
-		date: dataproj.date,
-		timestart: dataproj.timestart,
-		timeend: dataproj.timeend
-	  };
-	  setProjection(prevProjections => [...prevProjections, newProj]); // Update with newDate instead of dateS
-
-	  setDateProj({
-		cinema: '',
-		date: '',
-		timestart: '',
-		timeend: ''
-	  });
-	 console.log(projection)
-	 
+	const newProj = {
+	cinema: localStorage.getItem("optionCinema"),
+	date: dataproj.date,
+	timestart: dataproj.timestart,
+	timeend: dataproj.timeend
+	};
+	if (newProj.cinema !== '' && newProj.date !== '' && newProj.timestart !== '' && newProj.timeend !== '') {
+	setProjection(prevProjections => [...prevProjections, newProj]);
+	setShowDivProj(true);
+	setClickedBefore(true);
+	setDateProj({
+	cinema: '',
+	date: '',
+	timestart: '',
+	timeend: ''
+	});
 	}
-
-};
+	console.log("new projection add")
+	console.log(projection)
+	};
 
   
 
@@ -174,7 +188,11 @@ const handleAddToList = () => {
 	//submit button
 const handleSubmit = async (e) => {
 	e.preventDefault(); // Prevent the default submit and page reload
-  
+	if (!uploadImage) {
+		console.log("No image selected");
+		
+	  }
+	  else{
 			// Send image to Firebase Storage
 			const uploadTask = storage.ref(`images/${uploadImage.name}`).put(uploadImage);
 
@@ -195,12 +213,17 @@ const handleSubmit = async (e) => {
 			console.log(url);
 		}
 		);
-
+	}
+	
+		if (!uploadVideo) {
+			console.log("No video selected");
 		
+		  }
+		  else{
 // Upload video to Firebase Storage
-const uploadTaskVideo = storage.ref(`videos/${uploadVideo.name}`).put(uploadVideo);
+	const uploadTaskVideo = storage.ref(`videos/${uploadVideo.name}`).put(uploadVideo);
 
-uploadTaskVideo.on(
+	uploadTaskVideo.on(
   "state_changed",
   (snapshot) => {
     // Handle upload progress
@@ -219,8 +242,15 @@ uploadTaskVideo.on(
   }
 );
 
+	  }
+
   
 	// Upload Images Start to Firebase Storage
+	if (images.length == 0) {
+		console.log("No image selected");
+		
+	  }
+	  else{
 	const urls = []; // Create an array to store download URLs
 // Send list of images to Firebase Storage
 for (let i = 0; i < images.length; i++) {
@@ -239,51 +269,55 @@ for (let i = 0; i < images.length; i++) {
       // Handle upload error
       console.log(error);
     },
-    async () => {
+async () => {
       // Handle upload success
       const downloadUrlStart = await storage.ref("imagesStart").child(images[i].name).getDownloadURL();
       urls.push(downloadUrlStart);
       console.log(downloadUrlStart);
       // Check if all images are uploaded
+})
+}
   
-  if (urls.length == images.length) {
-			// Use destructuring to get form data fields from state
-			console.log("date: " + formData.date);
-			console.log("url Image" + url);
-			console.log("url video" + urlV);
-			console.log(formData);
-			console.log("liste Images Start" + images);
-			console.log("liste Url Images Start" + urls);
-  
-			// Create an object 
-				formData.categorie= localStorage.getItem("optiongenre")
-				formData.partner= localStorage.getItem("optionpartner")
-				formData.image = url
-				formData.video = urlV
-				formData.imagesStars = urls
-				formData.listProjection = projection
-				console.log("projection"+projection)
-				console.log("url Image"+url)
-				console.log("url video"+urlV)
-				console.log(formData);
-				console.log("liste Images Start"+images)
-				console.log("liste Url Images Start"+urls)
-			// Send POST request to server
-			await axios
-			  .post(urlAddFilm, formData)
-			  .then((response) => {
-				console.log(response);
-				window.location.reload(true);
-				// Handle response
-			  })
-			  .catch((error) => {
-				console.error(error);
-				// Handle error
-			  });
-		  }
-		}
-	  );
+		
+		
+	  
 	}
+
+	if (urls.length == images.length) {
+		// Use destructuring to get form data fields from state
+		console.log("date: " + formData.date);
+		console.log("url Image" + url);
+		console.log("url video" + urlV);
+		console.log(formData);
+		console.log("liste Images Start" + images);
+		console.log("liste Url Images Start" + urls);
+
+		// Create an object 
+			formData.categorie= localStorage.getItem("optiongenre")
+			formData.partner= localStorage.getItem("optionpartner")
+			formData.image = url
+			formData.video = urlV
+			formData.imagesStars = urls
+			formData.listProjection = projection
+			console.log("projection"+projection)
+			console.log("url Image"+url)
+			console.log("url video"+urlV)
+			console.log(formData);
+			console.log("liste Images Start"+images)
+			console.log("liste Url Images Start"+urls)
+		// Send POST request to server
+		await axios
+		  .put(urlFilm + "/"+localStorage.getItem("idFilm"), formData)
+		  .then((response) => {
+			console.log(response);
+			window.location.reload(true);
+			// Handle response
+		  })
+		  .catch((error) => {
+			console.error(error);
+			// Handle error
+		  });
+	  }
   };
   
 	 
@@ -305,12 +339,33 @@ const [showDiv, setShowDiv] = useState(false);
   const toggleDiv = () => {
     setShowDiv(!showDiv);
   };
+
+
+
+//delete projection liste projection 
+const DeleteProjection = (index) => {
+	setProjection((prevProjections) => {
+	  const newProjections = [...prevProjections];
+	  newProjections.splice(index, 1); // Remove the projection at the specified index
+	  return newProjections;
+	});
+	console.log(projection)
+  };
+  
+
+
 	  //select cinema 
 	  useEffect(() => {
 		const fetchData = async () => {
 			const response = await axios.get(urlCinema);
 			const responseCategorie = await axios.get(urlCategorie);
 			const responsePart = await axios.get(urlPartner);
+			const responseFilm = await axios.get(urlFilm+"/"+localStorage.getItem("idFilm"));
+			setFormData(responseFilm.data)
+			setProjection(responseFilm.data.listProjection);
+
+			console.log("projection init :");
+			console.log(projection);
 			setCinemas(response.data);
 			setCategories(responseCategorie.data);
 			setPartners(responsePart.data);
@@ -328,7 +383,7 @@ const [showDiv, setShowDiv] = useState(false);
 			<div className="row">
 				<div className="col-12">
 					<div className="main__title">
-						<h2>Add New Film</h2>
+						<h2>Update Film</h2>
 					</div>
 				</div>
 				
@@ -340,12 +395,12 @@ const [showDiv, setShowDiv] = useState(false);
 									<div className="col-12 col-sm-6 col-md-12">
 										<div className="form__img">
 											<label htmlFor="form__img-upload">Upload cover (270 x 400)</label>
-											<input id="form__img-upload" name="image" type="file" accept=".png, .jpg, .jpeg" 
+											<input   id="form__img-upload" name="image" type="file" accept=".png, .jpg, .jpeg" 
 											  onChange={(e)=>{
 												setUploadImage(e.target.files[0])
 											 }}
-							required/>
-											<img id="form__img" src="#" alt=" "/>
+							 />
+											<img id="form__img" src={formData.image} alt=" "/>
 										</div>
 									</div>
 								</div>
@@ -354,11 +409,12 @@ const [showDiv, setShowDiv] = useState(false);
 							<div className="col-12 col-md-7 form__content">
 								<div className="row row--form">
 									<div className="col-12">
-										<input type="text" className="form__input" placeholder="Title" name="title" value={formData.title}  onChange={onChange} required/>
+										<input type="text" className="form__input" placeholder="Title" name="title" value={formData.title}  onChange={onChange} />
+									
 									</div>
 
 									<div className="col-12">
-										<textarea id="text" name="description" className="form__textarea" placeholder="Description" value={formData.description}  onChange={onChange} required></textarea>
+										<textarea id="text" name="description" className="form__textarea" placeholder="Description" value={formData.description}  onChange={onChange} ></textarea>
 									</div>
 
 									
@@ -401,10 +457,14 @@ const [showDiv, setShowDiv] = useState(false);
 									
 									<div className="col-2 col-sm-1 col-lg-1">
 										
-										<button className="form__btn" type="button" onClick={toggleDiv} >New Partner</button>
+										<button className="form__btn_add" type="button" onClick={toggleDiv} >+</button>
 										
 										</div>	
-										<div className="col-12 col-lg-12" style={{ display: showDiv ? "block" : "none" }}>
+			
+			<div className="col-12 col-lg-12" style={{ display: showDiv ? "block" : "none" }}>
+			<div className="col-12 col-lg-10">
+									<form action="#" className="form form--profile">
+										<div className="row row--form">
       <div className="tab-content" id="myTabContent">
         <div className="tab-pane fade show active" id="tab-1" role="tabpanel" aria-labelledby="1-tab">
           <div className="col-12">
@@ -430,7 +490,7 @@ const [showDiv, setShowDiv] = useState(false);
                       </div>
                     </div>
                     <div className="col-12">
-                      <button className="form__btn" type="button" onClick={handleSubmitPartner}>+</button>
+                      <button className="form__btn" type="button" onClick={handleSubmitPartner}>New Partner</button>
                     </div>
                   </div>
               
@@ -439,10 +499,21 @@ const [showDiv, setShowDiv] = useState(false);
           </div>
         </div>
       </div>
+	  </div>
+	  </form>
+	  </div>
     </div>
 									
 									
 									<div className="col-10">
+									<div className="form__video">
+											<label id="movie1" for="form__video-upload">Upload video</label>
+											<input data-name="#movie1" id="form__video-upload" name="video"
+                                             className="form__video-upload" type="file" accept="video/mp4,video/x-m4v,video/*"
+											   onChange={(e)=>{
+												setUploadVideo(e.target.files[0])
+											 }}/>
+										</div>
 										<div className="form__gallery">
 											<label id="gallery1" htmlFor="form__gallery-upload">Upload photos Stars</label>
 											<input data-name="#gallery1" id="form__gallery-upload" name="gallery"
@@ -452,6 +523,7 @@ const [showDiv, setShowDiv] = useState(false);
 										</div>
 									</div>
 								</div>
+								
 							</div>
 
 							<div className="col-12">
@@ -460,41 +532,24 @@ const [showDiv, setShowDiv] = useState(false);
 										<span>Types:</span>
 									</li>
 									<li>
-										<input id="type1" type="radio"  name="type" checked={formData.type === "Movie"} value="Movie"  onChange={onChange} required/>
-										<label htmlFor="type1" selected>Movie</label>
+										<input id="type1" type="radio"  name="type" checked={formData.type === "Movie"} value="Movie"  onChange={onChange} />
+										<label For="type1" selected>Movie</label>
 									</li>
 								
 								</ul>
+								
 							</div>
 							
-							<div className="col-12">
+						
 								<div className="row row--form">
-									<div className="col-12">
-										<div className="form__video">
-											<label id="movie1" for="form__video-upload">Upload video</label>
-											<input data-name="#movie1" id="form__video-upload" name="video"
-                                             className="form__video-upload" type="file" accept="video/mp4,video/x-m4v,video/*"
-											   onChange={(e)=>{
-												setUploadVideo(e.target.files[0])
-											 }}/>
-										</div>
-									</div>
+									
+									<div className="col-12 col-lg-11">
+									<form action="#" className="form form--profile">
+								<div className="row row--form">
 									<div className="col-12  col-lg-4">
-										<select id="cinema" name="cinema" value={formData.cinema} >
-										<option value=""></option>
-												{cinemas.map(cinema => {
-														
-													return (
-													<option  value={cinema._id}>
-															{localStorage.setItem(cinema._id,cinema.name)}
-
-														{cinema.name}
-													</option>
-													);
-												})}
-										</select>
+									<CinemaSelect/>
 									</div>
-									<div className="col-12 col-sm-6 col-lg-4">
+									<div className="col-12 col-sm-6 col-lg-3">
 										<input type="date" className="form__input" placeholder="Date " name="date" value={dataproj.date}  onChange={onChangeProjection} />
 									</div>
 									<div className="col-12 col-6 col-lg-2 ">
@@ -505,10 +560,10 @@ const [showDiv, setShowDiv] = useState(false);
 										<input type="time" className="form__input" placeholder="Time End" name="timeend" value={dataproj.timeend}  onChange={onChangeProjection} />
 									</div>
 									<div className="col-12 col-sm-12 col-lg-1">
-										<button type="button" className="form__btn" onClick={handleAddToList} >+</button>
+										<button type="button" className="form__btn_add" onClick={handleAddToList} >+</button>
 									</div>
-				<div className="col-12">
-					<div className="dashbox">
+									<div className="col-12" >
+			<div className="dashbox">
 						<div className="dashbox__title">
 							<h3><i className=""></i> Projection</h3>
 
@@ -525,35 +580,43 @@ const [showDiv, setShowDiv] = useState(false);
 										<th>Time End</th>
 									</tr>
 								</thead>
-									<tbody>
-									{ projection.map( proj => (
-										
-										<tr>
-											<td>
-											<div className="main__table-text">{localStorage.getItem(proj.cinema)}</div>
+								<tbody>
+  {projection.map((proj, index) => (
+    <tr key={index}>
+      <td>
+        <div className="main__table-text">{localStorage.getItem(proj.cinema)}</div>
+      </td>
+      <td>
+        <div className="main__table-text">{proj.date}</div>
+      </td>
+      <td>
+        <div className="main__table-text">{proj.timestart}</div>
+      </td>
+      <td>
+        <div className="main__table-text">{proj.timeend}</div>
+      </td>
+      <td>
+        <div className="profile__actions">
+          <div>
+            <DeleteModal onDelete={() => DeleteProjection(index)} title={"Projection"} />
+          </div>
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
 
-											</td>
-										<td>
-											<div className="main__table-text">{proj.date}</div>
-										</td>
-										<td>
-											<div className="main__table-text">{proj.timestart}</div>
-										</td>
-										<td>
-											<div className="main__table-text">{proj.timeend}</div>
-										</td>
-										</tr>
-									))}
-							</tbody>
 							</table>
 						</div>
 				     	</div>
 				 </div>
-				
+				</div>
+				</form>
+				</div>
 			
 
 									<div className="col-12">
-										<button type="submit" className="form__btn" >Add Film</button>
+										<button type="submit" className="form__btn" >Update Film</button>
 									</div>
 									 {/* Render progress bar only when upload is in progress */}
     {uploadProgress > 0 && (
@@ -565,7 +628,7 @@ const [showDiv, setShowDiv] = useState(false);
       </div>
     )}
 								</div>
-							</div>
+							
 						</div>
 					</form>
 				</div>
@@ -573,6 +636,7 @@ const [showDiv, setShowDiv] = useState(false);
 		</div>
 		
 	</main>
+
         </Fragment>
     )
 }

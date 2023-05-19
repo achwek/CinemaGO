@@ -52,12 +52,21 @@ $(document).ready(function () {
 		removalDelay: 300,
 		mainClass: 'my-mfp-zoom-in',
 	});
-
+	
 	$('.modal__btn--dismiss').on('click', function (e) {
 		e.preventDefault();
 		$.magnificPopup.close();
 	});
-
+/**
+	 * 
+	 * 
+	 * 
+	 * $('.open-modal').magnificPopup({
+		type: 'inline',
+		removalDelay: 300,
+		mainClass: 'my-mfp-zoom-in'
+		});
+	 */
 	/*==============================
 	Select2
 	==============================*/

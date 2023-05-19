@@ -4,10 +4,14 @@ const categorieSchema = mongoose.Schema(
   {
     
     name: {
-        type: String,
-        required: [true, "Please add an name"],
-      }, 
-    
+      type: String,
+      required: [true, "Please add an name"],
+    }, 
+    idFilm: {
+      type: String,
+      //required: [true, "Please add an name"],
+    }, 
+  
 },
     {
       timestamps: true,

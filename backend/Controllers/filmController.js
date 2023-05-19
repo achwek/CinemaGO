@@ -22,6 +22,20 @@ const getFilmById = async (req, res) => {
     return res.status(500).json(error);
   }
 };
+const getFilmsByIdCategorie = async (req, res) => {
+  try {
+    const idCategorie = req.params.idCategorie;
+
+    const films = await Film.find({ categorie: idCategorie }).populate('categorie');
+
+    res.json(films);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des films', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des films' });
+  }
+};
+
+
 
 
 const addFilm = asyncHandler(async (req, res) => {
@@ -86,10 +100,18 @@ const deleteFilm = asyncHandler(async (req, res) => {
   await film.remove()
   res.status(200).json({ id: req.params.id })
 })
+
+
+
+
+
+
+
 module.exports = {
   getFilms,
   addFilm,
   updateFilm,
   deleteFilm,
   getFilmById,
+  getFilmsByIdCategorie,
 }

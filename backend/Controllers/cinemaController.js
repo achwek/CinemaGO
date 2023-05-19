@@ -32,8 +32,7 @@ const addCinema = asyncHandler(async (req, res) => {
   
     // Convert the age field to a number
     const capaciteN = parseInt(capacite);
-  
-  
+    
   
     // Create the film object
     const cinema = await Cinema.create({
